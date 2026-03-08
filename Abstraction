@@ -1,0 +1,4 @@
+The QR Code Based Secure Offline Banking System allows users to perform banking transactions without an internet connection. 
+In this system, transaction details such as user ID and amount are converted into a secure QR code. The receiver scans the QR code to complete the transaction. 
+The data is encrypted to ensure security and prevent fraud. 
+Transactions are stored locally and synchronized with the bank server when the internet becomes available. This system helps people in rural or low-network areas perform safe and easy digital payments.
