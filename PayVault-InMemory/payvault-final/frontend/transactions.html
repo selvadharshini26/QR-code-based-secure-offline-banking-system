@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PayVault — Transaction History</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#03060f;--s1:#080f1e;--s2:#0d1a2e;--bdr:#1a2a42;--gr:#00e5aa;--gr2:#00aaff;--red:#ff3b5c;--txt:#e8f0fe;--muted:#5a7a9a}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,170,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,170,0.02) 1px,transparent 1px);background-size:60px 60px;pointer-events:none}
+nav{position:sticky;top:0;z-index:100;background:rgba(8,15,30,0.92);border-bottom:1px solid var(--bdr);backdrop-filter:blur(20px);padding:0 28px;display:flex;align-items:center;height:60px;gap:16px}
+.nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+.nav-logo{width:34px;height:34px;background:linear-gradient(135deg,var(--gr),var(--gr2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.nav-name{font-size:17px;font-weight:800;background:linear-gradient(90deg,var(--gr),var(--gr2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.nav-back{margin-left:auto;padding:7px 14px;background:var(--s2);border:1px solid var(--bdr);border-radius:7px;color:var(--txt);font-family:'Syne',sans-serif;font-size:12.5px;font-weight:700;cursor:pointer;text-decoration:none;transition:border .2s}
+.nav-back:hover{border-color:var(--gr)}
+.main{position:relative;z-index:1;max-width:1000px;margin:0 auto;padding:28px 24px}
+/* Stats */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.stat-card{background:var(--s1);border:1px solid var(--bdr);border-radius:12px;padding:16px 18px}
+.stat-label{font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.stat-val{font-size:20px;font-weight:800;letter-spacing:-0.5px}
+.stat-val.green{color:var(--gr)}
+.stat-val.red{color:#ff6b7a}
+.stat-val.blue{color:var(--gr2)}
+/* Filters */
+.filter-bar{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
+.search-box{flex:1;min-width:200px;position:relative}
+.search-box input{width:100%;background:var(--s1);border:1.5px solid var(--bdr);border-radius:9px;padding:10px 14px 10px 38px;color:var(--txt);font-family:'Syne',sans-serif;font-size:13px;outline:none;transition:all .2s}
+.search-box input:focus{border-color:var(--gr);box-shadow:0 0 0 3px rgba(0,229,170,.1)}
+.search-box::before{content:'🔍';position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px}
+input::placeholder{color:var(--muted)}
+.filter-btns{display:flex;gap:6px}
+.fb{padding:8px 14px;background:var(--s1);border:1.5px solid var(--bdr);border-radius:8px;color:var(--muted);font-family:'Syne',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s}
+.fb.active,.fb:hover{border-color:var(--gr);color:var(--gr)}
+/* Table */
+.table-wrap{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;overflow:hidden}
+.table-head{display:grid;grid-template-columns:1fr 1.2fr 1.2fr 0.9fr 0.9fr 0.7fr;padding:12px 18px;border-bottom:1px solid var(--bdr);font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:1px;font-weight:600}
+.tx-row{display:grid;grid-template-columns:1fr 1.2fr 1.2fr 0.9fr 0.9fr 0.7fr;padding:13px 18px;border-bottom:1px solid rgba(26,42,66,0.5);align-items:center;transition:background .15s;cursor:pointer}
+.tx-row:last-child{border-bottom:none}
+.tx-row:hover{background:rgba(13,26,46,0.6)}
+.tx-id-cell{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--gr);font-weight:600}
+.tx-name-cell{font-size:13px;font-weight:700}
+.tx-sub{font-size:10px;color:var(--muted);margin-top:2px}
+.tx-amt-cell.neg{color:#ff6b7a;font-weight:800;font-size:13.5px}
+.tx-amt-cell.pos{color:var(--gr);font-weight:800;font-size:13.5px}
+.tx-date-cell{font-size:11px;color:var(--muted)}
+.status-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700}
+.s-ok{background:rgba(0,229,170,0.1);border:1px solid rgba(0,229,170,0.2);color:var(--gr)}
+.s-fail{background:rgba(255,59,92,0.1);border:1px solid rgba(255,59,92,0.2);color:#ff6b7a}
+.dir-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700}
+.d-sent{background:rgba(255,59,92,0.08);color:#ff6b7a}
+.d-recv{background:rgba(0,229,170,0.08);color:var(--gr)}
+.empty{padding:48px;text-align:center;color:var(--muted);font-size:14px}
+/* TX Detail Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(3,6,15,.85);backdrop-filter:blur(6px);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--s1);border:1px solid var(--bdr);border-radius:16px;width:100%;max-width:420px;animation:mIn .25s ease}
+@keyframes mIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.m-head{padding:16px 20px;border-bottom:1px solid var(--bdr);display:flex;justify-content:space-between;align-items:center}
+.m-head h3{font-size:14px;font-weight:800}
+.m-close{background:none;border:none;color:var(--muted);font-size:17px;cursor:pointer;padding:2px 6px;border-radius:5px}
+.m-close:hover{color:var(--txt)}
+.m-body{padding:20px}
+.receipt-row{display:flex;justify-content:space-between;padding:7px 0;font-size:12px;border-bottom:1px solid rgba(26,42,66,.4)}
+.receipt-row:last-child{border-bottom:none}
+.receipt-row span:first-child{color:var(--muted)}
+.receipt-row span:last-child{font-weight:700;font-family:'JetBrains Mono',monospace;max-width:55%;text-align:right;word-break:break-all}
+.btn-cp{width:100%;padding:10px;background:rgba(0,229,170,0.07);border:1.5px solid rgba(0,229,170,0.2);border-radius:8px;color:var(--gr);font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;cursor:pointer;margin-top:12px;transition:all .2s}
+.btn-cp:hover{background:rgba(0,229,170,0.12)}
+</style>
+</head>
+<body>
+<nav>
+  <a class="nav-brand" href="dashboard.html"><div class="nav-logo">💳</div><div class="nav-name">PayVault</div></a>
+  <a class="nav-back" href="dashboard.html">← Dashboard</a>
+</nav>
+
+<!-- TX Detail Modal -->
+<div class="modal-overlay" id="txModal">
+  <div class="modal">
+    <div class="m-head"><h3>🧾 Transaction Details</h3><button class="m-close" onclick="document.getElementById('txModal').classList.remove('open')">✕</button></div>
+    <div class="m-body" id="txModalBody"></div>
+  </div>
+</div>
+
+<div class="main">
+  <h1 style="font-size:22px;font-weight:800;margin-bottom:4px">Transaction History</h1>
+  <p style="font-size:13px;color:var(--muted);margin-bottom:20px;font-family:'JetBrains Mono',monospace">// Full ledger with filters &amp; search</p>
+
+  <div class="stats-row" id="statsRow"></div>
+
+  <div class="filter-bar">
+    <div class="search-box"><input type="text" id="searchIn" placeholder="Search TX ID, name, amount, note…" oninput="render()"></div>
+    <div class="filter-btns">
+      <button class="fb active" data-f="all" onclick="setFilter('all',this)">All</button>
+      <button class="fb" data-f="sent" onclick="setFilter('sent',this)">Sent</button>
+      <button class="fb" data-f="received" onclick="setFilter('received',this)">Received</button>
+      <button class="fb" data-f="success" onclick="setFilter('success',this)">Success</button>
+      <button class="fb" data-f="failed" onclick="setFilter('failed',this)">Failed</button>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-head">
+      <span>Transaction ID</span>
+      <span>From</span>
+      <span>To</span>
+      <span>Amount</span>
+      <span>Date</span>
+      <span>Status</span>
+    </div>
+    <div id="txTable"></div>
+  </div>
+</div>
+
+<script>
+const session=JSON.parse(localStorage.getItem('sb_session')||'null');
+if(!session){location.href='login.html';}
+const API='http://localhost:8080/api';
+let filterMode='all';
+
+// Load from backend then render
+(async function(){
+  try{
+    const r=await fetch(API+'/transactions?username='+session.username,{signal:AbortSignal.timeout(2500)});
+    const txs=await r.json();
+    if(Array.isArray(txs))localStorage.setItem('sb_transactions',JSON.stringify(txs));
+  }catch(_){}
+  render();buildStats();
+})();
+
+function setFilter(f,btn){filterMode=f;document.querySelectorAll('.fb').forEach(b=>b.classList.remove('active'));btn.classList.add('active');render()}
+
+function render(){
+  const q=(document.getElementById('searchIn').value||'').toLowerCase();
+  const users=JSON.parse(localStorage.getItem('sb_users')||'{}');
+  let txs=JSON.parse(localStorage.getItem('sb_transactions')||'[]')
+    .filter(t=>t.sender===session.username||t.receiver===session.username);
+
+  if(filterMode==='sent')txs=txs.filter(t=>t.sender===session.username);
+  else if(filterMode==='received')txs=txs.filter(t=>t.receiver===session.username);
+  else if(filterMode==='success')txs=txs.filter(t=>t.status==='Success');
+  else if(filterMode==='failed')txs=txs.filter(t=>t.status!=='Success');
+
+  if(q)txs=txs.filter(t=>(t.id||'').toLowerCase().includes(q)||(t.sender||'').toLowerCase().includes(q)||(t.receiver||'').toLowerCase().includes(q)||(t.note||'').toLowerCase().includes(q)||String(t.amount).includes(q)||(users[t.sender]?.name||'').toLowerCase().includes(q)||(users[t.receiver]?.name||'').toLowerCase().includes(q));
+
+  const el=document.getElementById('txTable');
+  if(!txs.length){el.innerHTML='<div class="empty">No transactions found</div>';return}
+
+  el.innerHTML=txs.map(t=>{
+    const isSent=t.sender===session.username;
+    const snd=users[t.sender]||{};const rcv=users[t.receiver]||{};
+    const sndName=snd.name||t.sender;const rcvName=rcv.name||t.receiver;
+    const dt=new Date(t.date);
+    const dateStr=dt.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+    const timeStr=dt.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+    const ok=t.status==='Success';
+    return `<div class="tx-row" onclick="showDetail('${t.id}')">
+      <div>
+        <div class="tx-id-cell">${t.id.substring(0,18)}…</div>
+        <div class="tx-sub">${t.note||'—'}</div>
+      </div>
+      <div>
+        <div class="tx-name-cell">${sndName}</div>
+        <div class="tx-sub">${snd.id||t.sender}</div>
+      </div>
+      <div>
+        <div class="tx-name-cell">${rcvName}</div>
+        <div class="tx-sub">${rcv.id||t.receiver}</div>
+      </div>
+      <div class="tx-amt-cell ${isSent?'neg':'pos'}">${isSent?'−':'+'} ₹${t.amount.toLocaleString('en-IN',{minimumFractionDigits:2})}</div>
+      <div class="tx-date-cell">${dateStr}<div style="margin-top:2px;font-size:10px">${timeStr}</div></div>
+      <div><span class="status-pill ${ok?'s-ok':'s-fail'}">${ok?'✓':'✕'} ${t.status}</span></div>
+    </div>`;
+  }).join('');
+}
+
+function buildStats(){
+  const users=JSON.parse(localStorage.getItem('sb_users')||'{}');
+  const u=users[session.username]||{};
+  const txs=JSON.parse(localStorage.getItem('sb_transactions')||'[]').filter(t=>t.sender===session.username||t.receiver===session.username);
+  const sent=txs.filter(t=>t.sender===session.username&&t.status==='Success').reduce((a,t)=>a+t.amount,0);
+  const recv=txs.filter(t=>t.receiver===session.username&&t.status==='Success').reduce((a,t)=>a+t.amount,0);
+  const failed=txs.filter(t=>t.status!=='Success').length;
+  document.getElementById('statsRow').innerHTML=`
+    <div class="stat-card"><div class="stat-label">Current Balance</div><div class="stat-val green">₹${(u.balance||0).toLocaleString('en-IN',{minimumFractionDigits:2})}</div></div>
+    <div class="stat-card"><div class="stat-label">Total Sent</div><div class="stat-val red">₹${sent.toLocaleString('en-IN',{minimumFractionDigits:0})}</div></div>
+    <div class="stat-card"><div class="stat-label">Total Received</div><div class="stat-val green">₹${recv.toLocaleString('en-IN',{minimumFractionDigits:0})}</div></div>
+    <div class="stat-card"><div class="stat-label">Total Transactions</div><div class="stat-val blue">${txs.length}</div></div>`;
+}
+
+function showDetail(txId){
+  const txs=JSON.parse(localStorage.getItem('sb_transactions')||'[]');
+  const t=txs.find(x=>x.id===txId);if(!t)return;
+  const users=JSON.parse(localStorage.getItem('sb_users')||'{}');
+  const snd=users[t.sender]||{};const rcv=users[t.receiver]||{};
+  const isSent=t.sender===session.username;const ok=t.status==='Success';
+  document.getElementById('txModalBody').innerHTML=`
+    <div style="text-align:center;margin-bottom:14px">
+      <div style="font-size:36px;margin-bottom:6px">${ok?'✅':'❌'}</div>
+      <div style="font-size:22px;font-weight:800;color:${isSent?'#ff6b7a':'var(--gr)'};">${isSent?'−':'+'} ₹${t.amount.toLocaleString('en-IN',{minimumFractionDigits:2})}</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px;font-family:'JetBrains Mono',monospace">${isSent?'SENT':'RECEIVED'}</div>
+    </div>
+    <div class="receipt-row"><span>Transaction ID</span><span style="color:var(--gr)">${t.id}</span></div>
+    <div class="receipt-row"><span>From</span><span>${snd.name||t.sender} (${snd.id||t.sender})</span></div>
+    <div class="receipt-row"><span>To</span><span>${rcv.name||t.receiver} (${rcv.id||t.receiver})</span></div>
+    <div class="receipt-row"><span>Note</span><span>${t.note||'—'}</span></div>
+    <div class="receipt-row"><span>Date</span><span>${new Date(t.date).toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</span></div>
+    <div class="receipt-row"><span>Type</span><span>${t.type||'SEND'}</span></div>
+    <div class="receipt-row"><span>Status</span><span style="color:${ok?'var(--gr)':'#ff6b7a'}">${ok?'✓ Success':'✕ Failed'}</span></div>
+    <div class="receipt-row"><span>Money Received?</span><span style="color:${ok?'var(--gr)':'#ff6b7a'};font-weight:700">${ok?'✅ Yes — Credited':'❌ No — Failed'}</span></div>
+    <button class="btn-cp" onclick="navigator.clipboard.writeText('${t.id}').then(()=>this.textContent='✅ Copied!').catch(()=>{})">📋 Copy Transaction ID</button>`;
+  document.getElementById('txModal').classList.add('open');
+}
+window.addEventListener('click',e=>{if(e.target.classList.contains('modal-overlay'))e.target.classList.remove('open')});
+</script>
+</body>
+</html>

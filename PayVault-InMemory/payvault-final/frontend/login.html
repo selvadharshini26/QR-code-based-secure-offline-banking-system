@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PayVault — Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#03060f;--s1:#080f1e;--s2:#0d1a2e;--bdr:#1a2a42;--gr:#00e5aa;--gr2:#00aaff;--red:#ff3b5c;--txt:#e8f0fe;--muted:#5a7a9a}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,170,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,170,0.03) 1px,transparent 1px);background-size:50px 50px;pointer-events:none}
+.orb{position:fixed;border-radius:50%;filter:blur(100px);pointer-events:none;z-index:0}
+.o1{width:500px;height:500px;background:radial-gradient(circle,rgba(0,229,170,0.08),transparent 70%);top:-150px;left:-100px}
+.o2{width:400px;height:400px;background:radial-gradient(circle,rgba(0,170,255,0.06),transparent 70%);bottom:-100px;right:-100px}
+@keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.wrap{position:relative;z-index:10;width:100%;max-width:900px;display:grid;grid-template-columns:1fr 430px;background:var(--s1);border:1px solid var(--bdr);border-radius:20px;overflow:hidden;animation:slideUp .5s ease both;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+/* LEFT */
+.left{padding:50px 44px;background:var(--bg);border-right:1px solid var(--bdr);position:relative;overflow:hidden}
+.left::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 50%,rgba(0,229,170,0.07),transparent 60%)}
+.brand-row{display:flex;align-items:center;gap:12px;margin-bottom:36px}
+.lbox{width:48px;height:48px;background:linear-gradient(135deg,var(--gr),var(--gr2));border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 0 28px rgba(0,229,170,0.35)}
+.lname{font-size:24px;font-weight:800;background:linear-gradient(90deg,var(--gr),var(--gr2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero h2{font-size:36px;font-weight:800;line-height:1.1;letter-spacing:-1.5px;margin-bottom:14px}
+.hero h2 span{background:linear-gradient(90deg,var(--gr),var(--gr2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p{font-size:13.5px;color:var(--muted);line-height:1.7;margin-bottom:32px;max-width:340px}
+.feats{display:flex;flex-direction:column;gap:11px}
+.feat{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--muted)}
+.fd{width:7px;height:7px;border-radius:50%;background:var(--gr);box-shadow:0 0 8px var(--gr);flex-shrink:0}
+/* RIGHT */
+.right{padding:40px 38px;overflow-y:auto;max-height:100vh}
+.right-top{height:2px;margin:-40px -38px 28px;background:linear-gradient(90deg,transparent,var(--gr),transparent);opacity:.4}
+.form-title{font-size:20px;font-weight:800;margin-bottom:3px;letter-spacing:-.5px}
+.form-sub{font-size:11.5px;color:var(--muted);margin-bottom:22px;font-family:'JetBrains Mono',monospace}
+/* Tabs */
+.tabs{display:flex;gap:4px;margin-bottom:22px;background:var(--s2);padding:4px;border-radius:9px;border:1px solid var(--bdr)}
+.tab{flex:1;padding:8px;text-align:center;font-size:12.5px;font-weight:700;border-radius:6px;cursor:pointer;transition:all .2s;color:var(--muted);border:none;background:none;font-family:'Syne',sans-serif}
+.tab.active{background:linear-gradient(135deg,var(--gr),var(--gr2));color:#020810;box-shadow:0 2px 10px rgba(0,229,170,.3)}
+/* Form */
+.fg{margin-bottom:14px}
+.fg label{display:block;font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;font-family:'JetBrains Mono',monospace}
+input,select{width:100%;background:var(--s2);border:1.5px solid var(--bdr);border-radius:9px;padding:11px 13px;color:var(--txt);font-family:'Syne',sans-serif;font-size:13.5px;outline:none;transition:border .2s,box-shadow .2s;appearance:none}
+input:focus,select:focus{border-color:var(--gr);box-shadow:0 0 0 3px rgba(0,229,170,.1)}
+input::placeholder{color:var(--muted)}
+input.icon-l{padding-left:36px}
+.iw{position:relative}
+.iw .ic{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none;opacity:.55}
+/* Password wrapper — eye button */
+.pw-wrap{position:relative}
+.pw-wrap .pw-inp{padding-right:42px}
+.pw-eye{position:absolute;right:11px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:15px;color:var(--muted);padding:4px;transition:color .2s;line-height:1}
+.pw-eye:hover{color:var(--gr)}
+/* Account types */
+.atyp{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:4px}
+.at{background:var(--s2);border:1.5px solid var(--bdr);border-radius:8px;padding:8px 4px;cursor:pointer;text-align:center;transition:all .2s;position:relative}
+.at:hover{transform:translateY(-1px)}
+.at.sel{border-color:var(--gr);background:rgba(0,229,170,0.08);box-shadow:0 0 10px rgba(0,229,170,.12)}
+.at .ck{position:absolute;top:3px;right:3px;width:12px;height:12px;background:var(--gr);border-radius:50%;display:none;align-items:center;justify-content:center;font-size:6px;color:#020810;font-weight:800}
+.at.sel .ck{display:flex}
+.at-ic{font-size:16px;display:block;margin-bottom:2px}
+.at-nm{font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase}
+.at.sel .at-nm{color:var(--gr)}
+/* Row layout */
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.frow .fg{margin-bottom:0}
+/* Phone */
+.phrow{display:flex;gap:7px}
+.phrow .phcode select{width:78px;padding:11px 6px;font-size:11.5px}
+.phrow .phinp{flex:1}
+/* Strength */
+.sb{height:3px;background:var(--bdr);border-radius:2px;margin-top:6px;overflow:hidden}
+.sf{height:100%;border-radius:2px;width:0;transition:all .3s}
+.sl{font-size:9.5px;margin-top:3px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+/* Button */
+.btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--gr),var(--gr2));color:#020810;border:none;border-radius:9px;font-family:'Syne',sans-serif;font-size:13.5px;font-weight:800;cursor:pointer;transition:all .2s;margin-top:4px}
+.btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,229,170,.35)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.sp{display:none;width:15px;height:15px;border:2px solid rgba(2,8,16,.3);border-top-color:#020810;border-radius:50%;animation:spin .6s linear infinite;margin:0 auto}
+/* Alerts */
+.ae{padding:10px 13px;border-radius:8px;font-size:12.5px;display:none;align-items:center;gap:7px;margin-bottom:12px;background:rgba(255,59,92,.08);border:1px solid rgba(255,59,92,.2);color:#ff6b7a}
+.ae.on{display:flex}
+.ao{padding:10px 13px;border-radius:8px;font-size:12.5px;display:none;align-items:center;gap:7px;margin-top:10px;background:rgba(0,229,170,.08);border:1px solid rgba(0,229,170,.2);color:var(--gr)}
+.ao.on{display:flex}
+/* Demo chips */
+.chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:16px}
+.chip{padding:4px 10px;background:var(--s2);border:1px solid var(--bdr);border-radius:20px;font-size:10px;font-family:'JetBrains Mono',monospace;cursor:pointer;transition:all .2s;color:var(--muted)}
+.chip:hover{border-color:var(--gr);color:var(--gr)}
+/* Username check */
+#unOk{display:none;font-size:9px;color:var(--gr);margin-top:2px;font-family:'JetBrains Mono',monospace}
+/* panels */
+#registerPanel{display:none}
+</style>
+</head>
+<body>
+<div class="orb o1"></div>
+<div class="orb o2"></div>
+<div class="wrap">
+  <!-- LEFT BRAND -->
+  <div class="left">
+    <div class="brand-row">
+      <div class="lbox">💳</div>
+      <div class="lname">PayVault</div>
+    </div>
+    <div class="hero">
+      <h2>Secure <span>QR Banking</span><br>for Everyone</h2>
+      <p>A GPay-inspired offline banking system with QR code payments, real-time balance, and full transaction history.</p>
+    </div>
+    <div class="feats">
+      <div class="feat"><span class="fd"></span>AES-256-GCM encrypted QR codes</div>
+      <div class="feat"><span class="fd"></span>BCrypt password hashing (cost-12)</div>
+      <div class="feat"><span class="fd"></span>Fraud detection &amp; duplicate blocking</div>
+      <div class="feat"><span class="fd"></span>SQLite offline database (Java backend)</div>
+      <div class="feat"><span class="fd"></span>Unique Transaction ID tracking</div>
+      <div class="feat"><span class="fd"></span>Works 100% offline — no internet needed</div>
+    </div>
+  </div>
+
+  <!-- RIGHT FORM -->
+  <div class="right">
+    <div class="right-top"></div>
+    <div class="form-title">Welcome to PayVault</div>
+    <div class="form-sub">// Secure offline banking system</div>
+
+    <div class="tabs">
+      <button class="tab active" id="tabLogin" onclick="showTab('login')">Sign In</button>
+      <button class="tab" id="tabReg" onclick="showTab('register')">Create Account</button>
+    </div>
+
+    <!-- ── LOGIN PANEL ── -->
+    <div id="loginPanel">
+      <div class="ae" id="lErr"><span>⚠</span><span id="lErrMsg"></span></div>
+      <div style="font-size:9.5px;color:var(--muted);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Quick Demo</div>
+      <div class="chips">
+        <div class="chip" onclick="fill('alice','pass123')">alice / pass123</div>
+        <div class="chip" onclick="fill('bob','pass456')">bob / pass456</div>
+        <div class="chip" onclick="fill('carol','pass789')">carol / pass789</div>
+        <div class="chip" onclick="fill('david','david123')">david / david123</div>
+      </div>
+      <div class="fg">
+        <label>Username</label>
+        <div class="iw"><span class="ic">👤</span><input type="text" id="lUser" class="icon-l" placeholder="Enter username" autocomplete="off"></div>
+      </div>
+      <div class="fg">
+        <label>Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="lPw" class="pw-inp" placeholder="Enter password">
+          <button class="pw-eye" type="button" onclick="toggleEye('lPw',this)">👁</button>
+        </div>
+      </div>
+      <button class="btn" id="lBtn" type="button" onclick="doLogin()">
+        <span id="lBtnTxt">Sign In →</span>
+        <div class="sp" id="lSp"></div>
+      </button>
+      <div class="ao" id="lOk"><span>✅</span><span id="lOkMsg"></span></div>
+    </div>
+
+    <!-- ── REGISTER PANEL ── -->
+    <div id="registerPanel">
+      <div class="ae" id="rErr"><span>⚠</span><span id="rErrMsg"></span></div>
+
+      <div class="frow">
+        <div class="fg"><label>First Name *</label><input type="text" id="rFn" placeholder="Alice" autocomplete="off"></div>
+        <div class="fg"><label>Last Name *</label><input type="text" id="rLn" placeholder="Johnson" autocomplete="off"></div>
+      </div>
+
+      <div class="fg">
+        <label>Mobile Number * <span style="color:var(--gr);font-size:8.5px">(used for receiving money)</span></label>
+        <div class="phrow">
+          <div class="phcode"><select id="rCode"><option value="+91">🇮🇳 +91</option><option value="+1">🇺🇸 +1</option><option value="+44">🇬🇧 +44</option><option value="+971">🇦🇪 +971</option><option value="+65">🇸🇬 +65</option></select></div>
+          <div class="phinp"><div class="iw"><span class="ic">📱</span><input type="text" id="rPh" class="icon-l" placeholder="9876543210" maxlength="12" oninput="this.value=this.value.replace(/\D/g,'')"></div></div>
+        </div>
+      </div>
+
+      <div class="fg">
+        <label>Account Type *</label>
+        <div class="atyp">
+          <div class="at sel" data-t="savings" onclick="selT(this)"><span class="ck">✓</span><span class="at-ic">💰</span><span class="at-nm">Savings</span></div>
+          <div class="at" data-t="current" onclick="selT(this)"><span class="ck">✓</span><span class="at-ic">🏢</span><span class="at-nm">Current</span></div>
+          <div class="at" data-t="salary" onclick="selT(this)"><span class="ck">✓</span><span class="at-ic">💼</span><span class="at-nm">Salary</span></div>
+          <div class="at" data-t="student" onclick="selT(this)"><span class="ck">✓</span><span class="at-ic">🎓</span><span class="at-nm">Student</span></div>
+          <div class="at" data-t="fd" onclick="selT(this)"><span class="ck">✓</span><span class="at-ic">🔒</span><span class="at-nm">Fixed Dep</span></div>
+          <div class="at" data-t="business" onclick="selT(this)"><span class="ck">✓</span><span class="at-ic">📊</span><span class="at-nm">Business</span></div>
+        </div>
+      </div>
+
+      <div class="frow">
+        <div class="fg">
+          <label>Initial Deposit (₹) *</label>
+          <div class="iw"><span class="ic">₹</span><input type="number" id="rDep" class="icon-l" placeholder="1000" min="0"></div>
+        </div>
+        <div class="fg">
+          <label>Username *</label>
+          <div class="iw"><span class="ic">@</span><input type="text" id="rUn" class="icon-l" placeholder="alice99" autocomplete="off" oninput="checkUN(this.value)"></div>
+          <div id="unOk">✓ Username available</div>
+        </div>
+      </div>
+
+      <div class="fg">
+        <label>Password * (min 8 characters)</label>
+        <div class="pw-wrap">
+          <input type="password" id="rPw" class="pw-inp" placeholder="Enter a strong password" autocomplete="new-password" oninput="pwStr(this.value)">
+          <button class="pw-eye" type="button" onclick="toggleEye('rPw',this)">👁</button>
+        </div>
+        <div class="sb"><div class="sf" id="sf"></div></div>
+        <div class="sl" id="sl">Enter a password</div>
+      </div>
+
+      <div class="fg">
+        <label>Confirm Password *</label>
+        <div class="pw-wrap">
+          <input type="password" id="rPw2" class="pw-inp" placeholder="Re-type the same password" autocomplete="new-password">
+          <button class="pw-eye" type="button" onclick="toggleEye('rPw2',this)">👁</button>
+        </div>
+        <div id="pwMatch" style="font-size:9.5px;margin-top:3px;font-family:'JetBrains Mono',monospace;display:none"></div>
+      </div>
+
+      <button class="btn" id="rBtn" type="button" onclick="doRegister()">
+        <span id="rBtnTxt">Create Account →</span>
+        <div class="sp" id="rSp"></div>
+      </button>
+      <div class="ao" id="rOk"><span>🎉</span><span id="rOkMsg"></span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   PayVault Login + Registration  — FIXED version
+   Key fix: passwords compared by reading .value fresh at submit
+            eye-toggle uses separate variable, not type comparison
+   ═══════════════════════════════════════════════════════════════ */
+
+const API   = 'http://localhost:8080/api';
+const MINS  = { savings:0, current:5000, salary:0, student:0, fd:1000, business:10000 };
+const DEMOS = {
+  alice: { pw:'pass123',  name:'Alice Johnson', bal:15000,    id:'USR001', type:'savings'  },
+  bob:   { pw:'pass456',  name:'Bob Smith',     bal:8500.5,   id:'USR002', type:'current'  },
+  carol: { pw:'pass789',  name:'Carol White',   bal:22300.75, id:'USR003', type:'savings'  },
+  david: { pw:'david123', name:'David Kumar',   bal:50000,    id:'USR004', type:'business' },
+};
+
+let activeType = 'savings';
+let activePanel = 'login';  // track which panel is visible
+
+/* ── Seed demo data on first visit ──────────────────────────── */
+(function seedData() {
+  if (!localStorage.getItem('sb_users')) {
+    const u = {};
+    Object.entries(DEMOS).forEach(([k, v]) => {
+      u[k] = { name:v.name, balance:v.bal, id:v.id, type:v.type, phone:'', password:'__demo__'+v.pw };
+    });
+    localStorage.setItem('sb_users', JSON.stringify(u));
+  }
+  if (!localStorage.getItem('sb_transactions')) {
+    const n = Date.now();
+    localStorage.setItem('sb_transactions', JSON.stringify([
+      { id:'TXN'+n,      sender:'bob',  receiver:'alice', amount:500,  note:'Lunch',   date:new Date(n-86400000).toISOString(),   status:'Success', type:'SEND' },
+      { id:'TXN'+(n+1),  sender:'alice',receiver:'carol', amount:1200, note:'Rent',    date:new Date(n-172800000).toISOString(),  status:'Success', type:'SEND' },
+      { id:'TXN'+(n+2),  sender:'david',receiver:'bob',   amount:5000, note:'Invoice', date:new Date(n-259200000).toISOString(), status:'Success', type:'SEND' },
+    ]));
+  }
+})();
+
+/* ── Tab switch ─────────────────────────────────────────────── */
+function showTab(tab) {
+  activePanel = tab;
+  document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+  document.getElementById('tabReg').classList.toggle('active',   tab === 'register');
+  document.getElementById('loginPanel').style.display    = (tab === 'login')    ? 'block' : 'none';
+  document.getElementById('registerPanel').style.display = (tab === 'register') ? 'block' : 'none';
+  clearAlerts();
+}
+
+function clearAlerts() {
+  ['lErr','lOk','rErr','rOk'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('on');
+  });
+}
+
+/* ── Quick-fill demo ────────────────────────────────────────── */
+function fill(u, p) {
+  document.getElementById('lUser').value = u;
+  document.getElementById('lPw').value   = p;
+}
+
+/* ── Eye toggle — tracked with data attribute, NOT type check ─ */
+function toggleEye(inputId, btn) {
+  const inp = document.getElementById(inputId);
+  // Use a data attribute to track state — avoids bugs with type comparison
+  const isHidden = (inp.dataset.shown !== 'true');
+  inp.type = isHidden ? 'text' : 'password';
+  inp.dataset.shown = isHidden ? 'true' : 'false';
+  btn.textContent = isHidden ? '🙈' : '👁';
+}
+
+/* ── Account type selector ──────────────────────────────────── */
+function selT(el) {
+  document.querySelectorAll('.at').forEach(a => a.classList.remove('sel'));
+  el.classList.add('sel');
+  activeType = el.dataset.t;
+}
+
+/* ── Username availability check ────────────────────────────── */
+function checkUN(val) {
+  const v   = val.trim().toLowerCase();
+  const okEl = document.getElementById('unOk');
+  if (v.length < 3) { okEl.style.display = 'none'; return; }
+  const users = JSON.parse(localStorage.getItem('sb_users') || '{}');
+  if (users[v]) {
+    okEl.style.display  = 'block';
+    okEl.style.color    = '#ff6b7a';
+    okEl.textContent    = '✗ Username already taken';
+  } else {
+    okEl.style.display  = 'block';
+    okEl.style.color    = 'var(--gr)';
+    okEl.textContent    = '✓ Username available';
+  }
+}
+
+/* ── Password strength meter ────────────────────────────────── */
+function pwStr(pw) {
+  let s = 0;
+  if (pw.length >= 8)  s++;
+  if (pw.length >= 12) s++;
+  if (/[A-Z]/.test(pw)) s++;
+  if (/[0-9]/.test(pw)) s++;
+  if (/[^A-Za-z0-9]/.test(pw)) s++;
+  const lvl = [
+    { w:'0%',   c:'transparent', t:'Enter a password' },
+    { w:'25%',  c:'#ff3b5c',     t:'Weak — add more characters' },
+    { w:'50%',  c:'#ff9f43',     t:'Fair' },
+    { w:'75%',  c:'#f7b731',     t:'Good' },
+    { w:'100%', c:'#00e5aa',     t:'Strong 💪' },
+  ][Math.min(s, 4)];
+  const f = document.getElementById('sf');
+  const l = document.getElementById('sl');
+  f.style.width      = lvl.w;
+  f.style.background = lvl.c;
+  l.textContent      = lvl.t;
+  l.style.color      = lvl.c === 'transparent' ? 'var(--muted)' : lvl.c;
+}
+
+/* ── Password match live indicator ─────────────────────────── */
+document.addEventListener('DOMContentLoaded', function() {
+  const rPw2 = document.getElementById('rPw2');
+  if (rPw2) {
+    rPw2.addEventListener('input', function() {
+      const pw1 = document.getElementById('rPw').value;
+      const pw2 = this.value;
+      const matchEl = document.getElementById('pwMatch');
+      if (!pw2) { matchEl.style.display = 'none'; return; }
+      matchEl.style.display = 'block';
+      if (pw1 === pw2) {
+        matchEl.textContent  = '✓ Passwords match';
+        matchEl.style.color  = 'var(--gr)';
+      } else {
+        matchEl.textContent  = '✗ Passwords do not match yet';
+        matchEl.style.color  = '#ff6b7a';
+      }
+    });
+  }
+});
+
+/* ── Helpers ────────────────────────────────────────────────── */
+function showErr(errId, msgId, msg) {
+  document.getElementById(msgId).textContent = msg;
+  document.getElementById(errId).classList.add('on');
+  // Scroll error into view
+  document.getElementById(errId).scrollIntoView({ behavior:'smooth', block:'center' });
+}
+function showOk(okId, msgId, msg) {
+  document.getElementById(msgId).textContent = msg;
+  document.getElementById(okId).classList.add('on');
+}
+function setBusy(btnId, txtId, spId, busy) {
+  document.getElementById(btnId).disabled = busy;
+  document.getElementById(txtId).style.display = busy ? 'none' : 'inline';
+  document.getElementById(spId).style.display  = busy ? 'block' : 'none';
+}
+function setSession(un, name, id, type, mode) {
+  localStorage.setItem('sb_session', JSON.stringify({
+    username:un, name, id, accountType:type, loggedAt:Date.now(), mode
+  }));
+}
+
+/* ═══════════════════════════════════════════════════
+   LOGIN
+   ═══════════════════════════════════════════════════ */
+async function doLogin() {
+  clearAlerts();
+  const un = document.getElementById('lUser').value.trim().toLowerCase();
+  const pw = document.getElementById('lPw').value;
+
+  if (!un || !pw) {
+    showErr('lErr', 'lErrMsg', 'Please enter both username and password');
+    return;
+  }
+
+  setBusy('lBtn', 'lBtnTxt', 'lSp', true);
+
+  // Try backend first
+  try {
+    const res = await fetch(API + '/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username:un, password:pw }),
+      signal: AbortSignal.timeout(3000)
+    });
+    const d = await res.json();
+
+    if (d.success) {
+      // Sync users from backend
+      try {
+        const ur = await fetch(API + '/users');
+        const au = await ur.json();
+        const um = {};
+        au.forEach(u => {
+          um[u.username] = { name:u.name, balance:u.balance, id:u.userId, type:u.accountType, phone:u.phone||'', password:'__backend__' };
+        });
+        localStorage.setItem('sb_users', JSON.stringify(um));
+      } catch(_) {}
+
+      setSession(un, d.name, d.userId||d.id, d.accountType||'savings', 'online');
+      showOk('lOk', 'lOkMsg', 'Welcome, ' + d.name + '! Redirecting…');
+      setTimeout(() => location.href = 'dashboard.html', 900);
+      return;
+    } else {
+      setBusy('lBtn', 'lBtnTxt', 'lSp', false);
+      showErr('lErr', 'lErrMsg', d.message || 'Invalid username or password');
+      return;
+    }
+  } catch(_) {
+    // Backend offline — use localStorage
+  }
+
+  // Offline fallback
+  const users = JSON.parse(localStorage.getItem('sb_users') || '{}');
+  const u     = users[un];
+
+  // Check demo users
+  const demo = DEMOS[un];
+  if (demo && demo.pw === pw) {
+    // Ensure demo user is in localStorage
+    if (!users[un]) {
+      users[un] = { name:demo.name, balance:demo.bal, id:demo.id, type:demo.type, phone:'', password:'__demo__'+demo.pw };
+      localStorage.setItem('sb_users', JSON.stringify(users));
+    }
+    setSession(un, demo.name, demo.id, demo.type, 'offline');
+    showOk('lOk', 'lOkMsg', 'Welcome, ' + demo.name + '! (Offline mode)');
+    setTimeout(() => location.href = 'dashboard.html', 900);
+    return;
+  }
+
+  // Check locally registered users
+  if (u && (u.password === '__local__' + pw || u.password === '__demo__' + pw)) {
+    setSession(un, u.name, u.id, u.type, 'offline');
+    showOk('lOk', 'lOkMsg', 'Welcome, ' + u.name + '! (Offline mode)');
+    setTimeout(() => location.href = 'dashboard.html', 900);
+    return;
+  }
+
+  setBusy('lBtn', 'lBtnTxt', 'lSp', false);
+  showErr('lErr', 'lErrMsg', 'Invalid username or password');
+}
+
+/* ═══════════════════════════════════════════════════
+   REGISTER  — with clear, step-by-step validation
+   ═══════════════════════════════════════════════════ */
+async function doRegister() {
+  clearAlerts();
+
+  // ── Read values fresh (never trust cached vars for passwords) ──
+  const fn   = document.getElementById('rFn').value.trim();
+  const ln   = document.getElementById('rLn').value.trim();
+  const code = document.getElementById('rCode').value;
+  const ph   = document.getElementById('rPh').value.trim();
+  const dep  = document.getElementById('rDep').value.trim();
+  const un   = document.getElementById('rUn').value.trim().toLowerCase();
+
+  // IMPORTANT: Read password values directly — do NOT use cached variables
+  const pwField  = document.getElementById('rPw');
+  const pw2Field = document.getElementById('rPw2');
+  const pw   = pwField.value;   // raw value, no trim (spaces ARE part of password)
+  const pw2  = pw2Field.value;  // raw value, no trim
+
+  // ── Validation — check each field in order ──────────────────────
+  if (!fn) {
+    showErr('rErr', 'rErrMsg', '❌ First name is required');
+    document.getElementById('rFn').focus();
+    return;
+  }
+  if (!ln) {
+    showErr('rErr', 'rErrMsg', '❌ Last name is required');
+    document.getElementById('rLn').focus();
+    return;
+  }
+  if (!ph || ph.length < 7) {
+    showErr('rErr', 'rErrMsg', '❌ Enter a valid mobile number (at least 7 digits)');
+    document.getElementById('rPh').focus();
+    return;
+  }
+
+  const depNum = parseFloat(dep);
+  const minDep = MINS[activeType] || 0;
+  if (!dep || isNaN(depNum) || depNum < minDep) {
+    showErr('rErr', 'rErrMsg',
+      minDep > 0
+        ? '❌ Minimum deposit for ' + activeType + ' account: ₹' + minDep.toLocaleString('en-IN')
+        : '❌ Please enter your initial deposit amount'
+    );
+    document.getElementById('rDep').focus();
+    return;
+  }
+
+  if (!un || un.length < 3) {
+    showErr('rErr', 'rErrMsg', '❌ Username must be at least 3 characters');
+    document.getElementById('rUn').focus();
+    return;
+  }
+  if (!/^[a-z0-9_]+$/.test(un)) {
+    showErr('rErr', 'rErrMsg', '❌ Username: only lowercase letters, numbers and underscore (_) allowed');
+    document.getElementById('rUn').focus();
+    return;
+  }
+  const existingUsers = JSON.parse(localStorage.getItem('sb_users') || '{}');
+  if (existingUsers[un]) {
+    showErr('rErr', 'rErrMsg', '❌ Username "' + un + '" is already taken — please choose another');
+    document.getElementById('rUn').focus();
+    return;
+  }
+
+  if (!pw || pw.length < 8) {
+    showErr('rErr', 'rErrMsg', '❌ Password must be at least 8 characters');
+    document.getElementById('rPw').focus();
+    return;
+  }
+
+  // ── THE KEY FIX: explicit character-by-character comparison ────
+  if (pw !== pw2) {
+    // Show exactly what's wrong to help the user
+    showErr('rErr', 'rErrMsg',
+      '❌ Passwords do not match — please re-type the confirm password field carefully'
+    );
+    // Clear and re-focus the confirm field
+    pw2Field.value = '';
+    pw2Field.dataset.shown = 'false';
+    pw2Field.type = 'password';
+    document.getElementById('pwMatch').style.display = 'none';
+    pw2Field.focus();
+    return;
+  }
+
+  // ── All validation passed — create account ─────────────────────
+  setBusy('rBtn', 'rBtnTxt', 'rSp', true);
+
+  const accId    = 'USR' + String(Object.keys(existingUsers).length + 200).padStart(3, '0');
+  const fullName = fn + ' ' + ln;
+  const fullPhone= code + ph;
+
+  // Save to localStorage immediately — always works
+  existingUsers[un] = {
+    name:     fullName,
+    balance:  depNum,
+    id:       accId,
+    type:     activeType,
+    phone:    fullPhone,
+    email:    '',
+    password: '__local__' + pw,
+    createdAt:new Date().toISOString()
+  };
+  localStorage.setItem('sb_users', JSON.stringify(existingUsers));
+
+  // Set session (auto-login)
+  setSession(un, fullName, accId, activeType, 'offline');
+
+  // Try backend silently
+  try {
+    await fetch(API + '/register', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ userId:accId, username:un, name:fullName, password:pw, balance:depNum, phone:fullPhone, accountType:activeType }),
+      signal:  AbortSignal.timeout(3000)
+    });
+  } catch(_) { /* backend offline — that's fine */ }
+
+  setBusy('rBtn', 'rBtnTxt', 'rSp', false);
+  showOk('rOk', 'rOkMsg', '🎉 Account created for ' + fullName + '! Going to dashboard…');
+  setTimeout(() => location.href = 'dashboard.html', 1200);
+}
+
+/* ── Enter key — ONLY submit if the button of active panel is in focus
+      or Ctrl+Enter / Shift+Enter not pressed ────────────────────────── */
+document.addEventListener('keydown', function(e) {
+  if (e.key !== 'Enter') return;
+  // Don't submit if user is in a select or textarea
+  if (['SELECT','TEXTAREA'].includes(document.activeElement.tagName)) return;
+  // Only submit the currently visible panel
+  if (activePanel === 'login') {
+    doLogin();
+  }
+  // Do NOT auto-submit register on Enter — user must click button
+  // (prevents accidental submission while filling form)
+});
+</script>
+</body>
+</html>
